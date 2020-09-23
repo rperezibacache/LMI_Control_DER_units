@@ -9,7 +9,7 @@ The algorithm runs on `python2.7`, and requires the `scipy` ([installation](http
 
 
 ### Example
-In `example.py` an example of a DER unit of 2[MVA] is provided. The nominal values and the circuit parameters are provided in `--SYSTEM DEFINITION--` section. In `main_LMI.py`, local functions are difined, which are called from `example.py`. To execute the example, just run:
+In `example.py` an example of a DER unit of 2[MVA] is provided. The nominal values and the circuit parameters are provided in `--SYSTEM DEFINITION--` section. In `main_LMI.py`, global functions are defined, which are called from `example.py`. To execute the example, just run:
 
 ```
 python example.py
