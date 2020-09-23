@@ -1,9 +1,9 @@
 import numpy as np
-from scipy.linalg import expm
 from scipy.special import factorial
-import cvxpy as cp
-
-#solve_discrete_are,expm,eigvals,expm,svd,pinv,eig,solve_continuous_are,sqrtm, solve_sylvester,solve_discrete_lyapunov
+#import cvxpy as cp
+from sympy import *
+from scipy.linalg import solve_discrete_are,expm,eigvals,expm,svd,pinv,eig,solve_continuous_are,sqrtm
+z = symbols("z")
 
 def C2D(A,B,C,D,P,dtd,method):
 	#{{{
@@ -73,5 +73,63 @@ def Model_Sys(pars,dtd):
 	#}}}
 
 
+def SS_closed_loop(sys,ctr,ss_out):
+	#{{{
+	#ss = (A,B,C,Dw,Bw,Cz,Dz,Dzw)
+	As = sys[0]
+	Bs = sys[1]
+	Cs = sys[2]
+	Dw = sys[3]
+	Bw = sys[4]
+	Cz = sys[5]
+	Dz = sys[6]
+	Dzw = sys[7]
+
+	Ac = ctr[0]
+	Bc = ctr[1]
+	Cc = ctr[2]
+	Dc = ctr[3]
+
+	Rj = ss_out[0]
+	Lj = ss_out[1]
+	#
+	Bj = Bw*Rj
+	Cj = Lj*Cz
+	Dj = Lj*Dzw*Rj
+	Ej = Lj*Dz
+	Fj = Dw*Rj
+	#
+	aux1 = np.append(As+Bs*Dc*Cs, Bs*Cc,axis=1)
+	aux2 = np.append(Bc*Cs,Ac,axis=1)
+	Acl = np.append(aux1,aux2,axis=0) 
+	#
+	Bcl = np.append(Bs*Dc*Fj + Bj,Bc*Fj,axis=0)
+	#
+	Ccl = np.append(Cj + Ej*Dc*Cs, Ej*Cc,axis=1)
+	Dcl = Dj + Ej*Dc*Fj
+	return Acl,Bcl,Ccl,Dcl
+	#}}}
+
+def disc_bode(Sys,dtd):
+#{{{
+	A = np.asmatrix(Sys[0],dtype=float)
+	B = np.asmatrix(Sys[1],dtype=float)
+	C = np.asmatrix(Sys[2],dtype=float)
+	D = np.asmatrix(Sys[3],dtype=float)
+	w_f = np.log10(np.pi/dtd)
+	Om = dtd*np.logspace(-3.,w_f,num=800)
+	N = Om.shape[0]
+	#
+	aux = (z*eye(A.shape[0])-A) 
+	Fi_1 = lambdify( (z),aux)
+	svd_G = np.asmatrix( np.zeros((2,N)) ) 
+	for i in xrange(N):
+		Fi = Fi_1(np.exp(1J*Om[i]))
+		aux = C*np.matrix(Fi,dtype=complex).I*B + D
+		U,s,V = svd(aux)
+		svd_G[0,i] = np.amax(s)  
+		svd_G[1,i] = np.amin(s) 
+	return svd_G,Om/dtd
+#}}}
 
 

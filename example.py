@@ -1,6 +1,6 @@
 # ----- Dependencies ----- #
 import numpy as np
-from scipy.linalg import svd,sqrtm 
+from scipy.linalg import svd,sqrtm,eig
 import main_LMI as LMI
 import cvxpy as cp
 
@@ -96,7 +96,7 @@ print ('# ----------------------------------------------------------------------
 Sb = 2.e6 # nominal power DER unit
 wb = 2.*np.pi*60. # nominal frequency 
 Vb = 520. # peak phase to neutral
-ib = 2.*Sb/(3.*Vb) # peak current
+ib = 2.*Sb/(3.*Vb) # peak nominal current
 dtd = 1./5000. # sampling time 
 #
 Rf = 1.62e-3
@@ -226,11 +226,46 @@ Ck = (Ch_LMI - Dk*C*X_LMI)*(M.I).T
 Bk = N.I*(Bh_LMI - Y_LMI*B*Dk)
 Ak = N.I*(Ah_LMI - N*Bk*C*X_LMI - Y_LMI*B*Ck*M.T -Y_LMI*A*X_LMI - Y_LMI*B*Dk*C*X_LMI)*(M.I).T
 #}}}
+ss = (A,B,C,Dw,Bw,Cz,Dz,Dzw)
 LMI_ctr = (Ak,Bk,Ck,Dk)
-print ('... solved!')
-print ('# ---------------------------------------------------------------------------- #')
-
-
-
+print ('# ----------------------------------------- #')
+print ('# -------- Controller --------------------- #')
+print 'Ac = ',Ak
+print 'Bc = ',Bk
+print 'Cc = ',Ck
+print 'Dc = ',Dk
+print ('# ----------------------------------------- #')
+print ('# --------- Norms-------------------------- #')
+print 'tr(Q*) = ', round(Q_LMI.trace()[0,0],4)
+ss_out = (R2,L2)
+(Acl,Bcl,Ccl,Dcl) = LMI.SS_closed_loop(ss,LMI_ctr,ss_out)
+aux = (Acl,Bcl,Ccl,Dcl)	
+svd,Om = LMI.disc_bode(aux,dtd)	
+print 'gamma_2 = %s, gamma*_2 = %s ' % (gamma_2, np.max(svd))
+ss_out = (R3,L3)
+(Acl,Bcl,Ccl,Dcl) = LMI.SS_closed_loop(ss,LMI_ctr,ss_out)
+aux = (Acl,Bcl,Ccl,Dcl)	
+svd,Om = LMI.disc_bode(aux,dtd)	
+print 'gamma_3 = %s, gamma*_3 = %s ' % (gamma_3,np.max(svd))
+ss_out = (R4,L4)
+(Acl,Bcl,Ccl,Dcl) = LMI.SS_closed_loop(ss,LMI_ctr,ss_out)
+aux = (Acl,Bcl,Ccl,Dcl)	
+svd,Om = LMI.disc_bode(aux,dtd)	
+print 'gamma_4 = %s, gamma*_4 = %s ' % (gamma_4,np.max(svd))
+ss_out = (R5,L5)
+(Acl,Bcl,Ccl,Dcl) = LMI.SS_closed_loop(ss,LMI_ctr,ss_out)
+aux = (Acl,Bcl,Ccl,Dcl)	
+svd,Om = LMI.disc_bode(aux,dtd)	
+print 'gamma_5 = %s, gamma*_5 = %s ' % (gamma_5,np.max(svd))
+print ('# ----------------------------------------- #')
+print ('# --------- settling time ----------------- #')
+ss_out = (1.,1.)
+(Acl,Bcl,Ccl,Dcl) = LMI.SS_closed_loop(ss,LMI_ctr,ss_out)
+w_eig,v =eig(np.asmatrix(Acl,dtype=float) )
+w_n = np.absolute(np.log(w_eig)/dtd)
+xi_n = -np.cos(np.angle(np.log(w_eig) ) )
+print 'tau*_s = ', 1./min(w_n) 
+print ('# --------- your design is DONE!--------------------- #')
+print ('# --------------------------------------------------- #')
 
 
