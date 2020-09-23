@@ -7,12 +7,12 @@ This algorithm solves the primary control synthesis problem for integration of D
 ### Dependencies
 
 ### Example
-In *example.py* an example of a DER unit of 2[MVA] is provided. The nominal values and the parameters are provide in *SYSTEM DEFINITION* section. In *main_LMI.py* a group of functions definitions are provided, which are called from *example.py*. To execute the example, just run:
+In `example.py` an example of a DER unit of 2[MVA] is provided. The nominal values and the circuit parameters are provided in `--SYSTEM DEFINITION--` section. In `main_LMI.py`, local functions are difined, which are called from `example.py`. To execute the example, just run:
 
 ```
 python example.py
 ```
-
-
+The algorithm converges in few seconds. If desired, the nominal values and circuit parameters can be modified for a different DER unit with other sampling time. If that is the case, and the control design problem result infeasible, 
+the authors recommend to adjust the `gamma_(j)` values.
 
 
